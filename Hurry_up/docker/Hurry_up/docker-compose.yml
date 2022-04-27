@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+    app:
+        build: ./backend/
+        container_name: app
+        restart: unless-stopped
+        env_file: .env
+        privileged: true
+        environment:
+            - NODE_ENV=$NODE_ENV
+        depends_on:
+            - redis
+        ports:
+            - "$PROXY_PORT:3000"
+        networks:
+            extnetwork:
+                ipv4_address: 172.88.88.3
+    redis:
+        image: redis:alpine
+        container_name: redis
+        env_file: .env
+        command: >
+          --requirepass ${REDIS_PASSWORD}
+          --bind 0.0.0.0
+          --protected-mode yes
+        networks:
+            extnetwork:
+                ipv4_address: 172.88.88.2
+networks:
+  extnetwork:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.88.88.0/24
+          gateway: 172.88.88.1
